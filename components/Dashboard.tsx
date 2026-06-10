@@ -154,7 +154,8 @@ export default function Dashboard({ results, resumo, config, clientName, onBack 
               <XAxis dataKey="faixa" tick={{ fontSize: 10, fill: "#5e6976" }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={currencyFormatter} tick={{ fontSize: 10, fill: "#5e6976" }} axisLine={false} tickLine={false} width={65} />
               <Tooltip
-                formatter={(value: number, name: string) => [formatBRL(value), name === "original" ? "Valor original" : "Estimativa recuperação"]}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                formatter={(value: any, name: any) => [formatBRL(Number(value)), name === "original" ? "Valor original" : "Estimativa recuperação"]}
                 labelFormatter={(l) => `Faixa: ${l}`}
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #ced3d9" }}
               />
@@ -177,7 +178,8 @@ export default function Dashboard({ results, resumo, config, clientName, onBack 
               <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" paddingAngle={2}>
                 {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
               </Pie>
-              <Tooltip formatter={(v: number) => formatBRL(v)} contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid #ced3d9" }} />
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              <Tooltip formatter={(v: any) => formatBRL(Number(v))} contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid #ced3d9" }} />
             </PieChart>
           </ResponsiveContainer>
           <div className="space-y-1 mt-1">
@@ -205,7 +207,8 @@ export default function Dashboard({ results, resumo, config, clientName, onBack 
               <CartesianGrid strokeDasharray="3 3" stroke="#e8eaed" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 10, fill: "#5e6976" }} axisLine={false} tickLine={false} />
               <YAxis dataKey="faixa" type="category" tick={{ fontSize: 10, fill: "#5e6976" }} axisLine={false} tickLine={false} width={55} />
-              <Tooltip formatter={(v: number) => [`${v} devedores`]} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #ced3d9" }} />
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              <Tooltip formatter={(v: any) => [`${v} devedores`]} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #ced3d9" }} />
               <Bar dataKey="devedores" fill="#77127b" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>

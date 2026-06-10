@@ -1,4 +1,4 @@
-import { getDiscount, type Profile, type PaymentMethod } from "./discount-tables";
+import { getDiscount, getDaysRange, type Profile, type PaymentMethod } from "./discount-tables";
 
 export interface DebtorInput {
   nome: string;
@@ -61,8 +61,6 @@ export function calcularDevedor(devedor: DebtorInput, config: Config): DebtorRes
   const parcelasMaximas = Math.floor(valorComDesconto / config.valorMinimoParcela);
   const parcelasEfetivas = Math.max(1, Math.min(config.numeroParcelas, parcelasMaximas));
   const valorParcela = valorComDesconto / parcelasEfetivas;
-
-  const { getDaysRange } = require("./discount-tables");
 
   return {
     ...devedor,
