@@ -252,7 +252,7 @@ export default function Dashboard({ results, resumo, config, clientName, onBack 
           <p className="text-sm font-semibold text-[#152b4a]">Detalhamento completo da carteira</p>
           <p className="text-xs text-[#5e6976]">{results.length} devedores · clique nos cabeçalhos para ordenar</p>
         </div>
-        <ResultsTable results={results} />
+        <ResultsTable results={results} config={config} />
       </div>
     </div>
   );
