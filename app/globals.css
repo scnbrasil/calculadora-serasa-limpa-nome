@@ -1,26 +1,70 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-sans: 'Sora', sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-brand-azul: var(--brand-azul);
+  --color-brand-rosa: var(--brand-rosa);
+  --color-brand-roxo: var(--brand-roxo);
+  --color-brand-laranja: var(--brand-laranja);
+  --color-brand-cinza: var(--brand-cinza);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #efefef;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --primary: #2a5595;
+  --primary-foreground: #ffffff;
+  --secondary: #e8eaed;
+  --secondary-foreground: #2a5595;
+  --muted: #f4f5f7;
+  --muted-foreground: #5e6976;
+  --accent: #f08700;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --border: #ced3d9;
+  --input: #e8eaed;
+  --ring: #2a5595;
+  --radius: 0.5rem;
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+  --brand-azul: #2a5595;
+  --brand-rosa: #e80070;
+  --brand-roxo: #77127b;
+  --brand-laranja: #f08700;
+  --brand-cinza: #5e6976;
+  --sidebar: #152b4a;
+  --azul-800: #152b4a;
+  --azul-700: #1f4070;
+  --azul-600: #2a5595;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground font-sans; }
 }
