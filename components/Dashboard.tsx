@@ -1,15 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { TrendingUp, Users, DollarSign, Percent, Download, ArrowLeft, Tag } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Percent, Download, ArrowLeft, Tag, Filter } from "lucide-react";
 import type { DebtorResult, Config, ResumoCarteira } from "@/lib/calculations";
 import { formatBRL } from "@/lib/utils";
 import ResultsTable from "./ResultsTable";
-import { generatePDF } from "@/lib/pdf-generator";
+import { generateHTML } from "@/lib/html-generator";
 import type { Profile, PaymentMethod } from "@/lib/discount-tables";
 
 const PROFILE_LABEL: Record<Profile, string> = {
@@ -90,7 +90,24 @@ export default function Dashboard({ results, resumo, config, clientName, onBack 
     [results]
   );
 
-  const handleDownload = () => generatePDF(results, resumo, config, clientName);
+  const faixasPresentes = useMemo(
+    () => FAIXAS_ORDER.filter((f) => results.some((r) => r.faixaDias === f)),
+    [results]
+  );
+  const [faixasFiltradas, setFaixasFiltradas] = useState<string[]>([]);
+
+  const toggleFaixa = (faixa: string) => {
+    setFaixasFiltradas((prev) =>
+      prev.includes(faixa) ? prev.filter((f) => f !== faixa) : [...prev, faixa]
+    );
+  };
+
+  const resultadosFiltrados = useMemo(
+    () => faixasFiltradas.length === 0 ? results : results.filter((r) => faixasFiltradas.includes(r.faixaDias)),
+    [results, faixasFiltradas]
+  );
+
+  const handleDownload = () => generateHTML(results, resumo, config, clientName);
 
   const today = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 
@@ -118,7 +135,7 @@ export default function Dashboard({ results, resumo, config, clientName, onBack 
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#2a5595] to-[#77127b] text-white text-sm font-semibold hover:opacity-90 active:opacity-80 transition-opacity shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Baixar PDF
+          Download
         </button>
       </div>
 
@@ -250,9 +267,44 @@ export default function Dashboard({ results, resumo, config, clientName, onBack 
       <div>
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-semibold text-[#152b4a]">Detalhamento completo da carteira</p>
-          <p className="text-xs text-[#5e6976]">{results.length} devedores · clique nos cabeçalhos para ordenar</p>
+          <p className="text-xs text-[#5e6976]">
+            {resultadosFiltrados.length} de {results.length} devedores · clique nos cabeçalhos para ordenar
+          </p>
         </div>
-        <ResultsTable results={results} config={config} />
+
+        {/* Filtro de faixas */}
+        <div className="flex flex-wrap items-center gap-2 mb-3 p-3 bg-white rounded-xl border border-[#ced3d9]">
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-[#5e6976] shrink-0">
+            <Filter className="w-3.5 h-3.5" />
+            Faixa de atraso:
+          </span>
+          {faixasPresentes.map((faixa) => {
+            const ativo = faixasFiltradas.includes(faixa);
+            return (
+              <button
+                key={faixa}
+                onClick={() => toggleFaixa(faixa)}
+                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                  ativo
+                    ? "bg-[#2a5595] text-white border-[#2a5595]"
+                    : "bg-white text-[#5e6976] border-[#ced3d9] hover:border-[#2a5595] hover:text-[#2a5595]"
+                }`}
+              >
+                {faixa}
+              </button>
+            );
+          })}
+          {faixasFiltradas.length > 0 && (
+            <button
+              onClick={() => setFaixasFiltradas([])}
+              className="px-3 py-1 rounded-full text-xs font-medium text-[#e80070] border border-[#e80070] hover:bg-[#ffecf5] transition-colors"
+            >
+              Limpar filtro
+            </button>
+          )}
+        </div>
+
+        <ResultsTable results={resultadosFiltrados} config={config} />
       </div>
     </div>
   );
