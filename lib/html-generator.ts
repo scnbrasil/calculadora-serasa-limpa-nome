@@ -40,7 +40,7 @@ function short(v: number): string {
 }
 
 function tip(...lines: string[]): string {
-  return lines.join("&#10;").replace(/"/g, "&quot;");
+  return lines.join("|").replace(/"/g, "&quot;");
 }
 
 function buildBarChart(faixaData: { faixa: string; faixaFull: string; original: number; recuperacao: number }[]): string {
@@ -428,16 +428,17 @@ export function generateHTML(
 <script>
   var _tt = document.getElementById('svg-tooltip');
   function showTip(el, event) {
-    var lines = el.dataset.tip.split('\n');
-    _tt.innerHTML = '<strong style="color:#152b4a">' + lines[0] + '</strong>' +
-      lines.slice(1).map(function(l){ return '<br/><span style="color:#5e6976">' + l + '</span>'; }).join('');
+    var raw = el.getAttribute('data-tip') || '';
+    var parts = raw.split('|');
+    _tt.innerHTML = '<strong style="color:#152b4a">' + parts[0] + '</strong>' +
+      parts.slice(1).map(function(l){ return '<br><span style="color:#5e6976">' + l + '</span>'; }).join('');
     _tt.style.display = 'block';
     moveTip(event);
   }
   function moveTip(event) {
     var x = event.clientX + 14, y = event.clientY + 14;
-    if (x + 200 > window.innerWidth) x = event.clientX - 210;
-    if (y + 80 > window.innerHeight) y = event.clientY - 80;
+    if (x + 220 > window.innerWidth) x = event.clientX - 230;
+    if (y + 90 > window.innerHeight) y = event.clientY - 100;
     _tt.style.left = x + 'px';
     _tt.style.top  = y + 'px';
   }
