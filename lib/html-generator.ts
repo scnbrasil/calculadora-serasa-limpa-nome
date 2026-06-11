@@ -441,7 +441,7 @@ export function generateHTML(
     all.forEach(function(r) { r.style.display = 'none'; });
     visible.forEach(function(r, i) {
       if (i >= (currentPage - 1) * PER_PAGE && i < currentPage * PER_PAGE) {
-        r.style.display = '';
+        r.style.display = 'block';
       }
     });
 
