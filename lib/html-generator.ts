@@ -266,7 +266,7 @@ export function generateHTML(
   .header h1{font-size:22px;font-weight:700;margin-bottom:4px}
   .header .sub{font-size:12px;opacity:.75}
   .badge{background:rgba(255,255,255,.15);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;text-align:right;margin-bottom:6px}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
   .kpi{background:#fff;border:1px solid #ced3d9;border-radius:12px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start}
   .kpi-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
   .kpi-val{font-size:19px;font-weight:700;color:#152b4a;line-height:1.2}
@@ -322,14 +322,6 @@ export function generateHTML(
         <div class="kpi-lbl">Estimativa de recuperação</div>
         <div class="kpi-val" style="color:#16a34a">${formatBRL(resumo.totalRecuperacao)}</div>
         <div class="kpi-sub">${resumo.taxaRecuperacaoMedia.toFixed(1)}% sobre o valor original</div>
-      </div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-icon" style="background:#ffecf5;color:#e80070">%</div>
-      <div>
-        <div class="kpi-lbl">Desconto médio aplicado</div>
-        <div class="kpi-val" style="color:#e80070">${resumo.descontoMedio.toFixed(1)}%</div>
-        <div class="kpi-sub">${formatBRL(resumo.totalAtualizado - resumo.totalRecuperacao)} descontados</div>
       </div>
     </div>
   </div>
