@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronUp, ChevronDown, ChevronRight } from "lucide-react";
 import type { DebtorResult, Config } from "@/lib/calculations";
 import { getDiscount, type PaymentMethod, type Profile } from "@/lib/discount-tables";
@@ -87,6 +87,8 @@ export default function ResultsTable({ results, config }: { results: DebtorResul
   const [page, setPage] = useState(0);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const perPage = 20;
+
+  useEffect(() => { setPage(0); setExpanded(new Set()); }, [results]);
 
   const sorted = [...results].sort((a, b) => {
     const av = a[sort.key];
