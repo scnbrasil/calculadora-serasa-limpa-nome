@@ -140,7 +140,7 @@ export default function Dashboard({ results, resumo, config, clientName, onBack 
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <KpiCard icon={Users} label="Total de devedores" value={String(resumo.totalDevedores)} color="bg-[#ebf1fb] text-[#2a5595]" />
         <KpiCard icon={DollarSign} label="Dívida original total" value={formatBRL(resumo.totalDividaOriginal)} color="bg-[#fff8ec] text-[#f08700]" />
         <KpiCard
@@ -149,13 +149,6 @@ export default function Dashboard({ results, resumo, config, clientName, onBack 
           value={formatBRL(resumo.totalRecuperacao)}
           sub={`${resumo.taxaRecuperacaoMedia.toFixed(1)}% sobre o valor original`}
           color="bg-[#dcfce7] text-[#16a34a]"
-        />
-        <KpiCard
-          icon={Percent}
-          label="Desconto médio aplicado"
-          value={`${resumo.descontoMedio.toFixed(1)}%`}
-          sub={`${formatBRL(resumo.totalAtualizado - resumo.totalRecuperacao)} descontados`}
-          color="bg-[#ffecf5] text-[#e80070]"
         />
       </div>
 
