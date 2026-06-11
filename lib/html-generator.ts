@@ -224,7 +224,7 @@ export function generateHTML(
     const dColor = daysColor(r.diasAtraso);
     const [bg, fg] = dColor.split(";color:");
     return `
-    <details class="debtor-row" style="border-bottom:1px solid #e8eaed">
+    <details class="debtor-row" data-faixa="${r.faixaDias}" style="border-bottom:1px solid #e8eaed">
       <summary style="display:grid;grid-template-columns:180px 130px 90px 70px 110px 100px 90px 110px 80px 110px 70px 110px;gap:0;align-items:center;padding:10px 12px;cursor:pointer;list-style:none;font-size:12px" class="row-summary">
         <span style="font-weight:600;color:#152b4a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.nome}">${r.nome}</span>
         <span style="color:#5e6976;font-size:11px">${r.documento}</span>
@@ -370,15 +370,26 @@ export function generateHTML(
 
   <!-- Tabela completa -->
   <div class="card" style="padding:0;overflow:hidden;margin-bottom:0">
-    <div style="padding:16px 20px;border-bottom:1px solid #ced3d9;display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <div class="card-title">Detalhamento completo da carteira</div>
-        <div class="card-sub" style="margin-bottom:0">${results.length} devedores · clique em cada linha para ver todas as opções de parcelamento</div>
+    <div style="padding:16px 20px;border-bottom:1px solid #ced3d9">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <div class="card-title">Detalhamento completo da carteira</div>
+          <div class="card-sub" style="margin-bottom:0" id="table-subtitle">${results.length} devedores · clique em cada linha para ver todas as opções de parcelamento</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="btn-prev" onclick="changePage(-1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">← Anterior</button>
+          <span id="page-info" style="font-size:12px;color:#5e6976;white-space:nowrap"></span>
+          <button id="btn-next" onclick="changePage(1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">Próxima →</button>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <button id="btn-prev" onclick="changePage(-1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">← Anterior</button>
-        <span id="page-info" style="font-size:12px;color:#5e6976;white-space:nowrap"></span>
-        <button id="btn-next" onclick="changePage(1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">Próxima →</button>
+      <!-- Filtro de faixa interativo -->
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#5e6976">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Faixa de atraso:
+        </span>
+        ${faixaData.map((f) => `<button class="faixa-btn" data-faixa="${f.faixaFull}" onclick="toggleFaixa(this)" style="padding:4px 12px;border-radius:20px;border:1px solid #ced3d9;background:#fff;color:#5e6976;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s">${f.faixaFull}</button>`).join("")}
+        <button id="btn-clear-filter" onclick="clearFilter()" style="display:none;padding:4px 12px;border-radius:20px;border:1px solid #e80070;background:#fff;color:#e80070;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit">Limpar filtro</button>
       </div>
     </div>
     <div style="overflow-x:auto">
@@ -393,7 +404,7 @@ export function generateHTML(
         ${debtorRows}
       </div>
     </div>
-    <div style="padding:12px 20px;border-top:1px solid #e8eaed;display:flex;justify-content:center;gap:10px;align-items:center">
+    <div style="padding:12px 20px;border-top:1px solid #e8eaed;display:flex;justify-content:center;gap:8px;align-items:center">
       <button id="btn-prev2" onclick="changePage(-1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">← Anterior</button>
       <span id="page-info2" style="font-size:12px;color:#5e6976;white-space:nowrap"></span>
       <button id="btn-next2" onclick="changePage(1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">Próxima →</button>
@@ -409,32 +420,80 @@ export function generateHTML(
 <script>
   var PER_PAGE = 20;
   var currentPage = 1;
-  function getRows() { return Array.from(document.querySelectorAll('.debtor-row')); }
-  function totalPages() { return Math.max(1, Math.ceil(getRows().length / PER_PAGE)); }
+  var activeFaixas = [];
+
+  function allRows() { return Array.from(document.querySelectorAll('.debtor-row')); }
+
+  function visibleRows() {
+    return allRows().filter(function(r) {
+      return activeFaixas.length === 0 || activeFaixas.indexOf(r.dataset.faixa) !== -1;
+    });
+  }
+
   function render() {
-    var rows = getRows();
-    var total = rows.length;
+    var all = allRows();
+    var visible = visibleRows();
+    var total = visible.length;
     var pages = Math.max(1, Math.ceil(total / PER_PAGE));
     if (currentPage > pages) currentPage = pages;
-    rows.forEach(function(r, i) {
-      r.style.display = (i >= (currentPage-1)*PER_PAGE && i < currentPage*PER_PAGE) ? '' : 'none';
+
+    // hide all, then show only current page of visible
+    all.forEach(function(r) { r.style.display = 'none'; });
+    visible.forEach(function(r, i) {
+      if (i >= (currentPage - 1) * PER_PAGE && i < currentPage * PER_PAGE) {
+        r.style.display = '';
+      }
     });
-    var info = 'Página ' + currentPage + ' de ' + pages + ' · ' + total + ' devedores';
+
+    var info = 'Página ' + currentPage + ' de ' + pages + ' · ' + total + ' de ${results.length} devedores';
     document.getElementById('page-info').textContent = info;
     document.getElementById('page-info2').textContent = info;
+    document.getElementById('table-subtitle').textContent = total + ' de ${results.length} devedores · clique em cada linha para ver todas as opções de parcelamento';
+
     var atFirst = currentPage === 1;
-    var atLast = currentPage === pages;
-    document.getElementById('btn-prev').disabled = atFirst;
-    document.getElementById('btn-prev2').disabled = atFirst;
-    document.getElementById('btn-next').disabled = atLast;
-    document.getElementById('btn-next2').disabled = atLast;
+    var atLast  = currentPage === pages;
+    ['btn-prev','btn-prev2'].forEach(function(id){ document.getElementById(id).disabled = atFirst; });
+    ['btn-next','btn-next2'].forEach(function(id){ document.getElementById(id).disabled = atLast; });
   }
+
   function changePage(dir) {
-    var pages = totalPages();
+    var pages = Math.max(1, Math.ceil(visibleRows().length / PER_PAGE));
     currentPage = Math.max(1, Math.min(pages, currentPage + dir));
     document.getElementById('debtor-table').scrollIntoView({ behavior: 'smooth', block: 'start' });
     render();
   }
+
+  function toggleFaixa(btn) {
+    var faixa = btn.dataset.faixa;
+    var idx = activeFaixas.indexOf(faixa);
+    if (idx === -1) {
+      activeFaixas.push(faixa);
+      btn.style.background = '#2a5595';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#2a5595';
+    } else {
+      activeFaixas.splice(idx, 1);
+      btn.style.background = '#fff';
+      btn.style.color = '#5e6976';
+      btn.style.borderColor = '#ced3d9';
+    }
+    document.getElementById('btn-clear-filter').style.display = activeFaixas.length ? 'inline-block' : 'none';
+    currentPage = 1;
+    render();
+  }
+
+  function clearFilter() {
+    activeFaixas = [];
+    document.querySelectorAll('.faixa-btn').forEach(function(b) {
+      b.style.background = '#fff';
+      b.style.color = '#5e6976';
+      b.style.borderColor = '#ced3d9';
+    });
+    document.getElementById('btn-clear-filter').style.display = 'none';
+    currentPage = 1;
+    render();
+  }
+
   render();
 </script>
 </body>
