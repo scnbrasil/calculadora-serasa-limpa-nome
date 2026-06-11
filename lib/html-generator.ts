@@ -379,16 +379,9 @@ export function generateHTML(
   <!-- Tabela completa -->
   <div class="card" style="padding:0;overflow:hidden;margin-bottom:0">
     <div style="padding:16px 20px;border-bottom:1px solid #ced3d9">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-        <div>
-          <div class="card-title">Detalhamento completo da carteira</div>
-          <div class="card-sub" style="margin-bottom:0" id="table-subtitle">${results.length} devedores · clique em cada linha para ver todas as opções de parcelamento</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <button id="btn-prev" onclick="changePage(-1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">← Anterior</button>
-          <span id="page-info" style="font-size:12px;color:#5e6976;white-space:nowrap"></span>
-          <button id="btn-next" onclick="changePage(1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">Próxima →</button>
-        </div>
+      <div style="margin-bottom:12px">
+        <div class="card-title">Detalhamento completo da carteira</div>
+        <div class="card-sub" style="margin-bottom:0" id="table-subtitle">${results.length} devedores · clique em cada linha para ver todas as opções de parcelamento</div>
       </div>
       <!-- Filtro de faixa interativo -->
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
@@ -472,14 +465,13 @@ export function generateHTML(
     });
 
     var info = 'Página ' + currentPage + ' de ' + pages + ' · ' + total + ' de ${results.length} devedores';
-    document.getElementById('page-info').textContent = info;
     document.getElementById('page-info2').textContent = info;
     document.getElementById('table-subtitle').textContent = total + ' de ${results.length} devedores · clique em cada linha para ver todas as opções de parcelamento';
 
     var atFirst = currentPage === 1;
     var atLast  = currentPage === pages;
-    ['btn-prev','btn-prev2'].forEach(function(id){ document.getElementById(id).disabled = atFirst; });
-    ['btn-next','btn-next2'].forEach(function(id){ document.getElementById(id).disabled = atLast; });
+    document.getElementById('btn-prev2').disabled = atFirst;
+    document.getElementById('btn-next2').disabled = atLast;
   }
 
   function changePage(dir) {
