@@ -224,7 +224,7 @@ export function generateHTML(
     const dColor = daysColor(r.diasAtraso);
     const [bg, fg] = dColor.split(";color:");
     return `
-    <details style="border-bottom:1px solid #e8eaed">
+    <details class="debtor-row" style="border-bottom:1px solid #e8eaed">
       <summary style="display:grid;grid-template-columns:180px 130px 90px 70px 110px 100px 90px 110px 80px 110px 70px 110px;gap:0;align-items:center;padding:10px 12px;cursor:pointer;list-style:none;font-size:12px" class="row-summary">
         <span style="font-weight:600;color:#152b4a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.nome}">${r.nome}</span>
         <span style="color:#5e6976;font-size:11px">${r.documento}</span>
@@ -370,9 +370,16 @@ export function generateHTML(
 
   <!-- Tabela completa -->
   <div class="card" style="padding:0;overflow:hidden;margin-bottom:0">
-    <div style="padding:16px 20px;border-bottom:1px solid #ced3d9">
-      <div class="card-title">Detalhamento completo da carteira</div>
-      <div class="card-sub" style="margin-bottom:0">${results.length} devedores · clique em cada linha para ver todas as opções de parcelamento</div>
+    <div style="padding:16px 20px;border-bottom:1px solid #ced3d9;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div class="card-title">Detalhamento completo da carteira</div>
+        <div class="card-sub" style="margin-bottom:0">${results.length} devedores · clique em cada linha para ver todas as opções de parcelamento</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button id="btn-prev" onclick="changePage(-1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">← Anterior</button>
+        <span id="page-info" style="font-size:12px;color:#5e6976;white-space:nowrap"></span>
+        <button id="btn-next" onclick="changePage(1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">Próxima →</button>
+      </div>
     </div>
     <div style="overflow-x:auto">
       <div class="table-header">
@@ -382,7 +389,14 @@ export function generateHTML(
         <span style="text-align:right">Parcelas</span><span style="text-align:right">Vl. parcela</span>
         <span></span>
       </div>
-      ${debtorRows}
+      <div id="debtor-table">
+        ${debtorRows}
+      </div>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid #e8eaed;display:flex;justify-content:center;gap:10px;align-items:center">
+      <button id="btn-prev2" onclick="changePage(-1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">← Anterior</button>
+      <span id="page-info2" style="font-size:12px;color:#5e6976;white-space:nowrap"></span>
+      <button id="btn-next2" onclick="changePage(1)" style="padding:6px 14px;border:1px solid #ced3d9;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">Próxima →</button>
     </div>
   </div>
 
@@ -392,6 +406,37 @@ export function generateHTML(
   </div>
 
 </div>
+<script>
+  var PER_PAGE = 20;
+  var currentPage = 1;
+  function getRows() { return Array.from(document.querySelectorAll('.debtor-row')); }
+  function totalPages() { return Math.max(1, Math.ceil(getRows().length / PER_PAGE)); }
+  function render() {
+    var rows = getRows();
+    var total = rows.length;
+    var pages = Math.max(1, Math.ceil(total / PER_PAGE));
+    if (currentPage > pages) currentPage = pages;
+    rows.forEach(function(r, i) {
+      r.style.display = (i >= (currentPage-1)*PER_PAGE && i < currentPage*PER_PAGE) ? '' : 'none';
+    });
+    var info = 'Página ' + currentPage + ' de ' + pages + ' · ' + total + ' devedores';
+    document.getElementById('page-info').textContent = info;
+    document.getElementById('page-info2').textContent = info;
+    var atFirst = currentPage === 1;
+    var atLast = currentPage === pages;
+    document.getElementById('btn-prev').disabled = atFirst;
+    document.getElementById('btn-prev2').disabled = atFirst;
+    document.getElementById('btn-next').disabled = atLast;
+    document.getElementById('btn-next2').disabled = atLast;
+  }
+  function changePage(dir) {
+    var pages = totalPages();
+    currentPage = Math.max(1, Math.min(pages, currentPage + dir));
+    document.getElementById('debtor-table').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    render();
+  }
+  render();
+</script>
 </body>
 </html>`;
 

@@ -107,7 +107,7 @@ export default function Dashboard({ results, resumo, config, clientName, onBack 
     [results, faixasFiltradas]
   );
 
-  const handleDownload = () => generateHTML(results, resumo, config, clientName);
+  const handleDownload = () => generateHTML(resultadosFiltrados, resumo, config, clientName);
 
   const today = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 
