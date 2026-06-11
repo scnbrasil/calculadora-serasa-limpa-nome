@@ -164,10 +164,21 @@ export default function Dashboard({ results, resumo, config, clientName, onBack 
               <XAxis dataKey="faixa" tick={{ fontSize: 10, fill: "#5e6976" }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={currencyFormatter} tick={{ fontSize: 10, fill: "#5e6976" }} axisLine={false} tickLine={false} width={65} />
               <Tooltip
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                formatter={(value: any, name: any) => [formatBRL(Number(value)), name === "original" ? "Valor original" : "Estimativa recuperação"]}
-                labelFormatter={(l) => `Faixa: ${l}`}
-                contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #ced3d9" }}
+                content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  return (
+                    <div className="bg-white border border-[#ced3d9] rounded-lg p-3 text-xs shadow-sm">
+                      <p className="font-semibold text-[#152b4a] mb-2">Faixa: {label}</p>
+                      {payload.map((entry, i) => (
+                        <p key={i} className="flex items-center gap-2 mb-1">
+                          <span className="w-2.5 h-2.5 rounded-sm inline-block shrink-0" style={{ backgroundColor: entry.name === "original" ? "#94a3b8" : "#2a5595" }} />
+                          <span className="text-[#5e6976]">{entry.name === "original" ? "Valor original" : "Estimativa recuperação"}:</span>
+                          <span className="font-semibold text-[#152b4a]">{formatBRL(Number(entry.value))}</span>
+                        </p>
+                      ))}
+                    </div>
+                  );
+                }}
               />
               <Bar dataKey="original" name="original" fill="#e8eaed" radius={[4, 4, 0, 0]} />
               <Bar dataKey="recuperacao" name="recuperacao" fill="#2a5595" radius={[4, 4, 0, 0]} />

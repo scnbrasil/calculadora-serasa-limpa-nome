@@ -39,7 +39,11 @@ function short(v: number): string {
   return formatBRL(v);
 }
 
-function buildBarChart(faixaData: { faixa: string; original: number; recuperacao: number }[]): string {
+function tip(...lines: string[]): string {
+  return lines.join("&#10;").replace(/"/g, "&quot;");
+}
+
+function buildBarChart(faixaData: { faixa: string; faixaFull: string; original: number; recuperacao: number }[]): string {
   if (!faixaData.length) return "";
   const W = 700, H = 220, padL = 72, padR = 20, padT = 12, padB = 44;
   const cW = W - padL - padR, cH = H - padT - padB;
@@ -62,9 +66,13 @@ function buildBarChart(faixaData: { faixa: string; original: number; recuperacao
     const cx = x + grpW / 2;
     const origH = scale(d.original);
     const recH  = scale(d.recuperacao);
+    const tipText = tip(`Faixa: ${d.faixaFull}`, `Valor original: ${short(d.original)}`, `Estimativa recuperação: ${short(d.recuperacao)}`);
+    svg += `<g style="cursor:pointer" data-tip="${tipText}" onmouseover="showTip(this,event)" onmouseout="hideTip()" onmousemove="moveTip(event)">`;
+    svg += `<rect x="${x}" y="${padT}" width="${grpW}" height="${cH + 10}" fill="transparent"/>`;
     svg += `<rect x="${cx - bW - 1}" y="${padT + cH - origH}" width="${bW}" height="${origH}" fill="#e8eaed" rx="3"/>`;
     svg += `<rect x="${cx + 1}"       y="${padT + cH - recH}"  width="${bW}" height="${recH}"  fill="#2a5595" rx="3"/>`;
     svg += `<text x="${cx}" y="${padT + cH + 14}" text-anchor="middle" font-size="9" fill="#5e6976" font-family="sans-serif">${d.faixa}</text>`;
+    svg += `</g>`;
   });
 
   svg += `</svg>`;
@@ -90,7 +98,9 @@ function buildPieChart(faixaData: { faixa: string; recuperacao: number }[], tota
     const x4 = cx + innerR * Math.cos(startAngle);
     const y4 = cy + innerR * Math.sin(startAngle);
     const large = sliceAngle > Math.PI ? 1 : 0;
-    svg += `<path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${outerR} ${outerR} 0 ${large} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L ${x3.toFixed(1)} ${y3.toFixed(1)} A ${innerR} ${innerR} 0 ${large} 0 ${x4.toFixed(1)} ${y4.toFixed(1)} Z" fill="${PIE_COLORS[i % PIE_COLORS.length]}"/>`;
+    const pct = ((d.recuperacao / totalRecuperacao) * 100).toFixed(1);
+    const tipText = tip(`Faixa: ${d.faixa}`, `Recuperação: ${short(d.recuperacao)}`, `Participação: ${pct}%`);
+    svg += `<path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${outerR} ${outerR} 0 ${large} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L ${x3.toFixed(1)} ${y3.toFixed(1)} A ${innerR} ${innerR} 0 ${large} 0 ${x4.toFixed(1)} ${y4.toFixed(1)} Z" fill="${PIE_COLORS[i % PIE_COLORS.length]}" style="cursor:pointer;transition:opacity .15s" data-tip="${tipText}" onmouseover="showTip(this,event);this.style.opacity='.8'" onmouseout="hideTip();this.style.opacity='1'" onmousemove="moveTip(event)"/>`;
     startAngle += sliceAngle;
   });
 
@@ -122,9 +132,13 @@ function buildHorizontalBarChart(faixaData: { faixa: string; devedores: number }
   faixaData.forEach((d, i) => {
     const y = padT + i * rowH + (rowH - bH) / 2;
     const barW = Math.max(2, (d.devedores / maxVal) * cW);
+    const tipText = tip(`Faixa: ${d.faixa}`, `Devedores: ${d.devedores}`);
+    svg += `<g style="cursor:pointer" data-tip="${tipText}" onmouseover="showTip(this,event)" onmouseout="hideTip()" onmousemove="moveTip(event)">`;
+    svg += `<rect x="${padL}" y="${(y - 2).toFixed(1)}" width="${cW}" height="${(bH + 4).toFixed(1)}" fill="transparent"/>`;
     svg += `<rect x="${padL}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bH}" fill="#77127b" rx="3"/>`;
     svg += `<text x="${padL - 4}" y="${(y + bH / 2 + 4).toFixed(1)}" text-anchor="end" font-size="9" fill="#5e6976" font-family="sans-serif">${d.faixa}</text>`;
     svg += `<text x="${(padL + barW + 5).toFixed(1)}" y="${(y + bH / 2 + 4).toFixed(1)}" font-size="9" fill="#152b4a" font-family="sans-serif">${d.devedores}</text>`;
+    svg += `</g>`;
   });
 
   svg += `</svg>`;
@@ -284,9 +298,11 @@ export function generateHTML(
   details[open] .row-summary{background:#ebf1fb}
   .table-header{display:grid;grid-template-columns:180px 130px 90px 70px 110px 100px 90px 110px 80px 110px 70px 110px;gap:0;padding:10px 12px;background:#f4f5f7;border-bottom:1px solid #ced3d9;font-size:11px;font-weight:600;color:#5e6976}
   .footer{text-align:center;font-size:11px;color:#5e6976;margin-top:32px;padding-top:16px;border-top:1px solid #e8eaed}
+  #svg-tooltip{position:fixed;background:#fff;border:1px solid #ced3d9;border-radius:8px;padding:8px 12px;font-size:12px;color:#152b4a;pointer-events:none;display:none;z-index:999;box-shadow:0 2px 10px rgba(0,0,0,.12);white-space:pre;line-height:1.6;font-family:"Sora",system-ui,sans-serif}
 </style>
 </head>
 <body>
+<div id="svg-tooltip"></div>
 <div class="page">
 
   <div class="header">
@@ -410,6 +426,23 @@ export function generateHTML(
 
 </div>
 <script>
+  var _tt = document.getElementById('svg-tooltip');
+  function showTip(el, event) {
+    var lines = el.dataset.tip.split('\n');
+    _tt.innerHTML = '<strong style="color:#152b4a">' + lines[0] + '</strong>' +
+      lines.slice(1).map(function(l){ return '<br/><span style="color:#5e6976">' + l + '</span>'; }).join('');
+    _tt.style.display = 'block';
+    moveTip(event);
+  }
+  function moveTip(event) {
+    var x = event.clientX + 14, y = event.clientY + 14;
+    if (x + 200 > window.innerWidth) x = event.clientX - 210;
+    if (y + 80 > window.innerHeight) y = event.clientY - 80;
+    _tt.style.left = x + 'px';
+    _tt.style.top  = y + 'px';
+  }
+  function hideTip() { _tt.style.display = 'none'; }
+
   var PER_PAGE = 20;
   var currentPage = 1;
   var activeFaixas = [];
